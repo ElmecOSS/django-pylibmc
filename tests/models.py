@@ -1,5 +1,6 @@
-from django.db import models
 from datetime import datetime
+
+from django.db import models
 
 
 def expensive_calculation():
@@ -10,4 +11,4 @@ def expensive_calculation():
 class Poll(models.Model):
     question = models.CharField(max_length=200)
     answer = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published', default=expensive_calculation)
+    pub_date = models.DateTimeField("date published", default=expensive_calculation)

@@ -13,6 +13,7 @@ def catcher(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
+            print(f"Running {func.__name__}")
             return func(*args, **kwargs)
         except Exception as e:
             logger.warning("Error occured while executing %s: %s", func.__name__, e)
@@ -21,6 +22,7 @@ def catcher(func):
 
 def make_and_validate_key(self, key, version=None):
     """Helper to make and validate keys."""
+    print(f"Validation of key: {key}")
     key = self.make_key(key, version=version)
     self.validate_key(key)
     return key

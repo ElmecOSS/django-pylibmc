@@ -20,9 +20,3 @@ def catcher(func):
             return False
 
 
-def make_and_validate_key(self, key, version=None):
-    """Helper to make and validate keys."""
-    print(f"Validation of key: {key}")
-    key = self.make_key(key, version=version)
-    self.validate_key(key)
-    return key

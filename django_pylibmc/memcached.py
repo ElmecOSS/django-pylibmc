@@ -61,16 +61,15 @@ class PyLibMCCache(BaseMemcachedCache):
 
     def __init__(self, server, params, username=None, password=None):
         import os
-
+        try:
+            import pylibmc
+            # from pylibmc import Error as MemcachedError
+        except ImportError:
+            raise InvalidCacheBackendError("Could not import pylibmc.")
+        
         self._local = local()
         self.binary = int(params.get("BINARY", False))
-        self._username = os.environ.get(
-            "MEMCACHE_USERNAME", username or params.get("USERNAME")
-        )
-        self._password = os.environ.get(
-            "MEMCACHE_PASSWORD", password or params.get("PASSWORD")
-        )
-        self._server = os.environ.get("MEMCACHE_SERVERS", server)
+
         super(PyLibMCCache, self).__init__(
             self._server,
             params,
@@ -109,7 +108,6 @@ class PyLibMCCache(BaseMemcachedCache):
 
         return super(PyLibMCCache, self).get_backend_timeout(timeout)
 
-    @catcher
     def add(self, key, value, timeout=DEFAULT_TIMEOUT, version=None):
         key = self.make_key(key, version=version)
 
@@ -117,12 +115,12 @@ class PyLibMCCache(BaseMemcachedCache):
             key, value, self.get_backend_timeout(timeout), **COMPRESS_KWARGS
         )
 
-    @catcher
+
     def get(self, key, default=None, version=None):
 
         return super(PyLibMCCache, self).get(key, default, version)
 
-    @catcher
+
     def set(self, key, value, timeout=DEFAULT_TIMEOUT, version=None):
 
         key = self.make_key(key, version=version)
@@ -130,19 +128,19 @@ class PyLibMCCache(BaseMemcachedCache):
             key, value, self.get_backend_timeout(timeout), **COMPRESS_KWARGS
         )
 
-    @catcher
+
     def delete(self, *args, **kwargs):
         return super(PyLibMCCache, self).delete(*args, **kwargs)
 
-    @catcher
+
     def get_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).get_many(*args, **kwargs)
 
-    @catcher
+
     def set_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).set_many(*args, **kwargs)
 
-    @catcher
+
     def delete_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).delete_many(*args, **kwargs)
 

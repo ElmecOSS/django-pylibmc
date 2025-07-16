@@ -18,6 +18,7 @@ from threading import local
 from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedCache
+
 from .utils import catcher
 
 try:
@@ -151,3 +152,16 @@ class PyLibMCCache(BaseMemcachedCache):
         # reconnects. Copied from Django's PyLibMCCache backend:
         # https://github.com/django/django/blob/1.11.9/django/core/cache/backends/memcached.py#L207-L210
         pass
+
+    def __getstate__(self):
+        # Create a shallow copy of the instance state
+        state = self.__dict__.copy()
+        # Remove _local since threading.local() objects are not pickleable
+        state.pop("_local", None)
+        return state
+
+    def __setstate__(self, state):
+        # Restore the instance state
+        self.__dict__.update(state)
+        # Recreate the thread-local storage
+        self._local = local()

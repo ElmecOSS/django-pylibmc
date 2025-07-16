@@ -18,5 +18,3 @@ def catcher(func):
         except Exception as e:
             logger.warning("Error occured while executing %s: %s", func.__name__, e)
             return False
-
-

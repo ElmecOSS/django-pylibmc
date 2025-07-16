@@ -79,6 +79,8 @@ class PyLibMCCache(BaseMemcachedCache):
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
         self._server = server
+        self.__username = username
+        self.__password = password
         self._local = local()
         self.binary = int(params.get("BINARY", False))
 

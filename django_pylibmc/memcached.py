@@ -11,6 +11,7 @@ Unlike the default Django caching backends, this backend lets you pass 0 as a
 timeout, which translates to an infinite timeout in memcached.
 """
 
+import functools
 import logging
 import warnings
 from threading import local
@@ -18,8 +19,6 @@ from threading import local
 from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedCache
-import functools
-import logging
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
@@ -35,6 +34,7 @@ except ImportError:
 
 log = logging.getLogger("django.pylibmc")
 
+
 def catcher(func):
     """Wrapper to catch exceptions and log them."""
 
@@ -42,11 +42,12 @@ def catcher(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            print(f"Running {func.__name__}")
             return func(*args, **kwargs)
         except Exception as e:
-            logger.warning("Error occured while executing %s: %s", func.__name__, e)
+            logger.warning("Error in %s: %s", func.__name__, e)
             return False
+
+    return wrapper
 
 
 MIN_COMPRESS_LEN = getattr(settings, "PYLIBMC_MIN_COMPRESS_LEN", 0)  # Disabled
@@ -78,9 +79,10 @@ COMPRESS_KWARGS = {
 class PyLibMCCache(BaseMemcachedCache):
 
     def __init__(self, server, params, username=None, password=None):
-        import os
+
         try:
             import pylibmc
+
             # from pylibmc import Error as MemcachedError
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
@@ -128,6 +130,7 @@ class PyLibMCCache(BaseMemcachedCache):
 
         return super(PyLibMCCache, self).get_backend_timeout(timeout)
 
+    @catcher
     def add(self, key, value, timeout=DEFAULT_TIMEOUT, version=None):
         key = self.make_key(key, version=version)
 
@@ -135,12 +138,12 @@ class PyLibMCCache(BaseMemcachedCache):
             key, value, self.get_backend_timeout(timeout), **COMPRESS_KWARGS
         )
 
-
+    @catcher
     def get(self, key, default=None, version=None):
 
         return super(PyLibMCCache, self).get(key, default, version)
 
-
+    @catcher
     def set(self, key, value, timeout=DEFAULT_TIMEOUT, version=None):
 
         key = self.make_key(key, version=version)
@@ -152,15 +155,15 @@ class PyLibMCCache(BaseMemcachedCache):
     def delete(self, *args, **kwargs):
         return super(PyLibMCCache, self).delete(*args, **kwargs)
 
-
+    @catcher
     def get_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).get_many(*args, **kwargs)
 
-
+    @catcher
     def set_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).set_many(*args, **kwargs)
 
-
+    @catcher
     def delete_many(self, *args, **kwargs):
         return super(PyLibMCCache, self).delete_many(*args, **kwargs)
 

@@ -19,7 +19,6 @@ from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedCache
 
-from .utils import catcher
 
 try:
     import pylibmc
@@ -29,6 +28,19 @@ except ImportError:
 
 
 log = logging.getLogger("django.pylibmc")
+
+def catcher(func):
+    """Wrapper to catch exceptions and log them."""
+
+    # preserve function metadata
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            print(f"Running {func.__name__}")
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.warning("Error occured while executing %s: %s", func.__name__, e)
+            return False
 
 
 MIN_COMPRESS_LEN = getattr(settings, "PYLIBMC_MIN_COMPRESS_LEN", 0)  # Disabled
@@ -66,7 +78,7 @@ class PyLibMCCache(BaseMemcachedCache):
             # from pylibmc import Error as MemcachedError
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
-        
+        self._server = server
         self._local = local()
         self.binary = int(params.get("BINARY", False))
 
@@ -128,7 +140,7 @@ class PyLibMCCache(BaseMemcachedCache):
             key, value, self.get_backend_timeout(timeout), **COMPRESS_KWARGS
         )
 
-
+    @catcher
     def delete(self, *args, **kwargs):
         return super(PyLibMCCache, self).delete(*args, **kwargs)
 

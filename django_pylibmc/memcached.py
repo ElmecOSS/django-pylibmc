@@ -18,6 +18,12 @@ from threading import local
 from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedCache
+import functools
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.WARNING)
 
 
 try:
@@ -79,8 +85,8 @@ class PyLibMCCache(BaseMemcachedCache):
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
         self._server = server
-        self.__username = username
-        self.__password = password
+        self._username = username
+        self._password = password
         self._local = local()
         self.binary = int(params.get("BINARY", False))
 

@@ -18,7 +18,7 @@ from threading import local
 from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedCache
-from .utils import catcher, make_and_validate_key
+from .utils import catcher
 
 try:
     import pylibmc

@@ -49,7 +49,39 @@ if MIN_COMPRESS_LEN > 0 and not pylibmc.support_compression:
         "not compiled with support for it."
     )
 
-
+SUPPORTED_LYBMC_OPTIONS = [
+    "_hash_with_prefix_key",
+    "_io_bytes_watermark",
+    "_io_key_prefetch",
+    "_io_msg_watermark",
+    "_noreply",
+    "_poll_timeout",
+    "_socket_recv_size",
+    "_socket_send_size",
+    "_sort_hosts",
+    "auto_eject",
+    "buffer_requests",
+    "cas",
+    "connect_timeout",
+    "dead_timeout",
+    "distribution",
+    "failure_limit",
+    "hash",
+    "ketama",
+    "ketama_hash",
+    "ketama_weighted",
+    "namespace",
+    "no_block",
+    "num_replicas",
+    "pickle_protocol",
+    "receive_timeout",
+    "remove_failed",
+    "retry_timeout",
+    "send_timeout",
+    "tcp_keepalive",
+    "tcp_nodelay",
+    "verify_keys",
+]
 COMPRESS_LEVEL = getattr(
     settings, "PYLIBMC_COMPRESS_LEVEL", -1
 )  # zlib.Z_DEFAULT_COMPRESSION
@@ -75,28 +107,40 @@ class PyLibMCCache(BaseMemcachedCache):
             import pylibmc
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
-        
+
         self._server = server
         self._username = username
         self._password = password
         self.binary = int(params.get("BINARY", False))
         self._local = local()
-        
+
         if self.binary:
-            log.warning("Binary protocol is deprecated (https://docs.memcached.org/protocols/), this library no longer support this feature. Protocol is automatically set to false.")
+            log.warning(
+                "Binary protocol is deprecated (https://docs.memcached.org/protocols/), this library no longer support this feature. Protocol is automatically set to false."
+            )
             self.binary = 0
-            
+
         self._new_params = params.copy()
         # This transformation of "OPTIONS" is useful to use standard behaviors key inside CACHE dict (Django Options)
-        if self._new_params.get("OPTIONS", None) is not None and self._new_params.get("OPTIONS", {"message": "miao"}).get("behaviors", None) is not None:
-            
+        if (
+            self._new_params.get("OPTIONS", None) is not None
+            and self._new_params.get("OPTIONS", {"message": "miao"}).get(
+                "behaviors", None
+            )
+            is not None
+        ):
+
             self._behaviors = self._new_params.get("OPTIONS", {}).get("behaviors", None)
             for key, item in self._behaviors.items():
+                if key not in SUPPORTED_LYBMC_OPTIONS:
+                    log.warning(
+                        f"Option {key} is not supported, check https://sendapatch.se/projects/pylibmc/behaviors.html to see a list of supported options"
+                    )
+                    continue
                 self._new_params["OPTIONS"].update({key: item})
-                
+
             self._new_params["OPTIONS"].pop("behaviors")
-        
-        
+
         super(PyLibMCCache, self).__init__(
             self._server,
             self._new_params,

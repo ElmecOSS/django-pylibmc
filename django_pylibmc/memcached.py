@@ -23,8 +23,6 @@ from django.core.cache.backends.memcached import DEFAULT_TIMEOUT, BaseMemcachedC
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.WARNING)
-
-
 log = logging.getLogger("django.pylibmc")
 
 
@@ -75,18 +73,26 @@ class PyLibMCCache(BaseMemcachedCache):
 
         try:
             import pylibmc
-            # from pylibmc import Error as MemcachedError
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
+        
         self._server = server
         self._username = username
         self._password = password
         self.binary = int(params.get("BINARY", False))
-        
         self._local = local()
-        self._options = params.get("OPTIONS", None)
-        if self._options is not None:
-            self._options = self._options.get("behaviors", None)
+        
+        if self.binary:
+            log.warning("Binary protocol is deprecated (https://docs.memcached.org/protocols/), this library no longer support this feature. Protocol is automatically set to false.")
+            self.binary = 0
+        
+        self._old_options = params.get("OPTIONS", None)
+        if self._old_options is not None and self._old_options.get("behaviors", None) is not None:
+            self._behaviors = self.old_options.get("behaviors")
+            params.pop("OPTIONS")
+            self._new_options = self._old_options.update(self._behaviors)
+        
+        
             
         super(PyLibMCCache, self).__init__(
             self._server,

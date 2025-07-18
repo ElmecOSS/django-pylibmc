@@ -85,15 +85,15 @@ class PyLibMCCache(BaseMemcachedCache):
         if self.binary:
             log.warning("Binary protocol is deprecated (https://docs.memcached.org/protocols/), this library no longer support this feature. Protocol is automatically set to false.")
             self.binary = 0
+            
         self._new_params = params.copy()
-        self._old_options = params.get("OPTIONS", None)
-        if self._old_options is not None and self._old_options.get("behaviors", None) is not None:
-            self._behaviors = self._old_options.get("behaviors")
-            self._new_params.pop("OPTIONS") # Remove OPTIONS from params dict 
-            self._old_options.pop("behaviors") # Remove behaviors to avoid issues with pylibmc
-            self._old_options["OPTIONS"] = self._behaviors # Add behaviors dict directly to new OPTIONS dict
-            self._new_options = self._old_options
-            self._new_params.update(self._new_options) # Add new OPTIONS dict to params
+        if self._new_params.get("OPTIONS", None) is not None and self._new_params.get("OPTIONS", {"message": "miao"}).get("behaviors", None) is not None:
+            
+            self._behaviors = self._new_params.get("OPTIONS", {}).get("behaviors", None)
+            for key, item in self._behaviors.items():
+                self._new_params["OPTIONS"].update({key: item})
+                
+            self._new_params["OPTIONS"].pop("behaviors")
         
         
         super(PyLibMCCache, self).__init__(

@@ -123,7 +123,7 @@ class PyLibMCCache(BaseMemcachedCache):
         self._new_params = params.copy()
         self._options_copy = self._new_params.get("OPTIONS", {}).copy()
 
-        for key in self._options_copy:
+        for key in self._options_copy and key is not "behaviors":
             if key not in SUPPORTED_LYBMC_OPTIONS:
                 log.warning(
                     f"Option {key} is not supported, check https://sendapatch.se/projects/pylibmc/behaviors.html to see a list of supported options"

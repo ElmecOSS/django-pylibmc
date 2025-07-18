@@ -121,6 +121,15 @@ class PyLibMCCache(BaseMemcachedCache):
             self.binary = 0
 
         self._new_params = params.copy()
+        self._options_copy = self._new_params.get("OPTIONS", {}).copy()
+        
+        for key in self._options_copy:
+                if key not in SUPPORTED_LYBMC_OPTIONS:
+                    log.warning(
+                        f"Option {key} is not supported, check https://sendapatch.se/projects/pylibmc/behaviors.html to see a list of supported options"
+                    )
+                    self._new_params.get("OPTIONS", {}).pop(key)
+                    
         # This transformation of "OPTIONS" is useful to use standard behaviors key inside CACHE dict (Django Options)
         if (
             self._new_params.get("OPTIONS", None) is not None
@@ -131,12 +140,6 @@ class PyLibMCCache(BaseMemcachedCache):
         ):
 
             self._behaviors = self._new_params.get("OPTIONS", {}).get("behaviors", None)
-            for key in self._new_params.get("OPTIONS", {}):
-                if key not in SUPPORTED_LYBMC_OPTIONS:
-                    log.warning(
-                        f"Option {key} is not supported, check https://sendapatch.se/projects/pylibmc/behaviors.html to see a list of supported options"
-                    )
-                    self._new_params.get("OPTIONS", {}).pop(key)
 
             for key, item in self._behaviors.items():
                 if key not in SUPPORTED_LYBMC_OPTIONS:

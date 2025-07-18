@@ -91,7 +91,8 @@ class PyLibMCCache(BaseMemcachedCache):
             self._behaviors = self._old_options.get("behaviors")
             params.pop("OPTIONS") # Remove OPTIONS from params dict 
             self._old_options.pop("behaviors") # Remove behaviors to avoid issues with pylibmc
-            self._new_options = self._old_options.update(self._behaviors) # Add behaviors dict directly to new OPTIONS dict
+            self._old_options["OPTIONS"] = self._behaviors # Add behaviors dict directly to new OPTIONS dict
+            self._new_options = self._old_options
             params.update(self._new_options) # Add new OPTIONS dict to params
         
         

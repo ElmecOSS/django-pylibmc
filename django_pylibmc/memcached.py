@@ -50,6 +50,7 @@ if MIN_COMPRESS_LEN > 0 and not pylibmc.support_compression:
     )
 
 SUPPORTED_LYBMC_OPTIONS = [
+    "behaviors",
     "_hash_with_prefix_key",
     "_io_bytes_watermark",
     "_io_key_prefetch",
@@ -123,7 +124,7 @@ class PyLibMCCache(BaseMemcachedCache):
         self._new_params = params.copy()
         self._options_copy = self._new_params.get("OPTIONS", {}).copy()
 
-        for key in self._options_copy and key is not "behaviors":
+        for key in self._options_copy:
             if key not in SUPPORTED_LYBMC_OPTIONS:
                 log.warning(
                     f"Option {key} is not supported, check https://sendapatch.se/projects/pylibmc/behaviors.html to see a list of supported options"

@@ -84,9 +84,9 @@ class PyLibMCCache(BaseMemcachedCache):
         self.binary = int(params.get("BINARY", False))
         
         self._local = local()
-        self._options = params.get("OPTIONS", None)
-        if self._options is not None:
-            self._options = self._options.get("behaviors", None)
+        # self._options = params.get("OPTIONS", None)
+        # if self._options is not None:
+        #     self._options = self._options.get("behaviors", None)
             
         super(PyLibMCCache, self).__init__(
             self._server,
@@ -111,6 +111,7 @@ class PyLibMCCache(BaseMemcachedCache):
             )
         client = self._lib.Client(self._servers, **client_kwargs)
         if self._options:
+            log.info(f"Loading pylibmc options: {self._options}")
             client.behaviors = self._options
 
         self._local.client = client

@@ -87,6 +87,7 @@ class PyLibMCCache(BaseMemcachedCache):
             self.binary = 0
             
         self._new_params = params.copy()
+        # This transformation of "OPTIONS" is useful to use standard behaviors key inside CACHE dict (Django Options)
         if self._new_params.get("OPTIONS", None) is not None and self._new_params.get("OPTIONS", {"message": "miao"}).get("behaviors", None) is not None:
             
             self._behaviors = self._new_params.get("OPTIONS", {}).get("behaviors", None)

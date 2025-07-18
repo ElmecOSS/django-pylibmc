@@ -25,13 +25,6 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.WARNING)
 
 
-try:
-    import pylibmc
-    from pylibmc import Error as MemcachedError
-except ImportError:
-    raise InvalidCacheBackendError("Could not import pylibmc.")
-
-
 log = logging.getLogger("django.pylibmc")
 
 
@@ -82,16 +75,16 @@ class PyLibMCCache(BaseMemcachedCache):
 
         try:
             import pylibmc
-
             # from pylibmc import Error as MemcachedError
         except ImportError:
             raise InvalidCacheBackendError("Could not import pylibmc.")
         self._server = server
         self._username = username
         self._password = password
-        self._local = local()
         self.binary = int(params.get("BINARY", False))
-
+        
+        self._local = local()
+        self._options = params.get("OPTIONS", {})
         super(PyLibMCCache, self).__init__(
             self._server,
             params,

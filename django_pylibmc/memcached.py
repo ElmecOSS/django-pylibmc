@@ -234,6 +234,19 @@ class PyLibMCCache(BaseMemcachedCache):
         # reconnects. Copied from Django's PyLibMCCache backend:
         # https://github.com/django/django/blob/1.11.9/django/core/cache/backends/memcached.py#L207-L210
         pass
+    
+    @catcher
+    def touch(self, *args, **kwargs):
+        return super(PyLibMCCache, self).touch(*args, **kwargs)
+
+
+    @catcher
+    def incr(self, *args, **kwargs):
+        return super(PyLibMCCache, self).incr(*args, **kwargs)
+
+    @catcher
+    def clear(self):
+        return super(PyLibMCCache, self).clear()
 
     def __getstate__(self):
         # Create a shallow copy of the instance state
